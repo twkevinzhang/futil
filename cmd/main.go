@@ -3,11 +3,17 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli/v2"
+	"io"
 	"os"
 )
 
 // version of the futil tool
 const version = "0.0.1"
+
+type hashWriter interface {
+	io.Writer
+	Sum([]byte) []byte
+}
 
 func main() {
 	app := &cli.App{
