@@ -48,7 +48,7 @@ The project is organized into several key parts:
 1. Ensure that [Go](https://golang.org/dl/) is installed on your system.
 2. Clone the repository and navigate to the project directory:
    ```bash
-   git clone https://github.com/your-username/futil.git
+   git clone https://github.com/twkevinzhang/futil.git
    cd futil
    ```
 
@@ -56,7 +56,7 @@ The project is organized into several key parts:
 Use Go modules to build the project:
 ```bash
 go mod tidy
-go build -o futil main.go
+go build -o futil ./cmd
 ```
 
 ### Usage Examples
@@ -122,6 +122,17 @@ Commands:
 
 Global Options:
    --help, -h  show help
+   
+$ ./futil help linecount
+NAME:
+   futil linecount - Print line count of file
+
+USAGE:
+   futil linecount [flags]
+
+OPTIONS:
+   --file value, -f value  the input file
+   --help, -h              show help
 ```
 
 ## Unit Testing
