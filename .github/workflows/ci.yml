@@ -10,18 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
-      - name: Checkout code
+      - name: Checkout the repository
         uses: actions/checkout@v2
 
-      # Set up Go environment
-      - name: Set up Go
+      - name: Set up Go environment
         uses: actions/setup-go@v2
         with:
           go-version: 1.23
 
-      # Cache Go modules to speed up builds
-      - name: Cache Go modules
+      - name: Cache Go modules to speed up builds
         uses: actions/cache@v2
         with:
           path: ~/go/pkg/mod
@@ -29,32 +26,38 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # Install dependencies
       - name: Install dependencies
         run: go mod tidy
 
-      # Run Unit Tests
-      - name: Run tests
+      - name: Run unit tests
         run: go test -v ./...
 
-      # Build the binary
-      - name: Build binary
-        run:  go build -o futil ./cmd
+      - name: Build the binary
+        run: go build -o futil ./cmd
 
-      # Create a GitHub Release
-      - name: Create Release
+      - name: Get release title
+        id: get_release_title
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          title="${COMMIT_MESSAGE#release:}"
+          title=$(echo "$title" | sed 's/^[[:space:]]*//')
+          echo "::set-output name=release_title::$title"
+
+      - name: Create a GitHub Release
+        if: startsWith(github.event.head_commit.message, 'release:')
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
+          tag_name: ${{ steps.get_release_title.outputs.release_title }}
+          release_name: ${{ steps.get_release_title.outputs.release_title }}
           draft: false
           prerelease: false
 
-      # Upload the built binary as a release asset
-      - name: Upload Release Asset
+      - name: Upload the built binary as a release asset
+        if: startsWith(github.event.head_commit.message, 'release:')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
