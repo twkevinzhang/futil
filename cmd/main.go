@@ -16,6 +16,8 @@ type hashWriter interface {
 }
 
 func main() {
+	cli.CommandHelpTemplate = readTemplate()
+	cli.AppHelpTemplate = readTemplate()
 	app := &cli.App{
 		Name:    "futil",
 		Usage:   "File Utility",
@@ -75,4 +77,21 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func readTemplate() string {
+	return `{{$v := offset .HelpName 6}}{{if .Usage}}{{wrap .Usage $v}}{{end}}
+
+USAGE:
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}}{{if .ArgsUsage}} {{.ArgsUsage}}{{else}}{{if .Args}} [arguments...]{{end}}{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
+
+COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
+
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
 }

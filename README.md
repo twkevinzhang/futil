@@ -123,9 +123,8 @@ Commands:
 Global Options:
    --help, -h  show help
    
-$ ./futil help linecount
-NAME:
-   futil linecount - Print line count of file
+$ ./futil help linecount 
+Print line count of file
 
 USAGE:
    futil linecount [flags]
