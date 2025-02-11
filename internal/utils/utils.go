@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 )
@@ -11,18 +12,13 @@ import (
 // IsBinary checks whether the beginning of the stream looks like binary.
 // It peeks at up to 512 bytes and returns true if any null byte is found.
 func IsBinary(r *bufio.Reader) bool {
-	const sniffLen = 512
-	buf, err := r.Peek(sniffLen)
+	bytes, err := r.Peek(512)
 	if err != nil && err != io.EOF {
-		// 無法 Peek 時，認定為 binary
 		return true
 	}
-	for _, b := range buf {
-		if b == 0 {
-			return true
-		}
-	}
-	return false
+
+	contentType := http.DetectContentType(bytes)
+	return contentType != "text/plain; charset=utf-8"
 }
 
 // OpenInput opens the input file or returns os.Stdin if filename == "-"
