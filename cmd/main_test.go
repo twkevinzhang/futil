@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"flag"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -40,7 +39,7 @@ func captureOutput(f func()) string {
 
 // createTempFile 於系統暫存目錄建立檔案，寫入指定內容，並回傳檔案路徑
 func createTempFile(t *testing.T, prefix, content string) string {
-	tmpfile, err := ioutil.TempFile("", prefix)
+	tmpfile, err := os.CreateTemp("", prefix)
 	if err != nil {
 		t.Fatalf("建立暫存檔案失敗: %v", err)
 	}
@@ -53,7 +52,7 @@ func createTempFile(t *testing.T, prefix, content string) string {
 
 // createBinaryTempFile 建立一個含有 binary 內容（包含 null byte）的暫存檔案
 func createBinaryTempFile(t *testing.T, prefix string, content []byte) string {
-	tmpfile, err := ioutil.TempFile("", prefix)
+	tmpfile, err := os.CreateTemp("", prefix)
 	if err != nil {
 		t.Fatalf("建立暫存檔案失敗: %v", err)
 	}

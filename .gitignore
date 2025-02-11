@@ -27,3 +27,5 @@ go.work.sum
 .idea/
 .DS_Store
 futil
+# Added by goreleaser init:
+dist/

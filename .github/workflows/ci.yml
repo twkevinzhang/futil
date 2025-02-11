@@ -1,9 +1,10 @@
 name: CI/CD Pipeline
 
 on:
+  pull_request:
   push:
-    branches:
-      - master
+    tags:
+      - "*"
 
 jobs:
   build_and_release:
@@ -26,6 +27,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Lint the code
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+
       - name: Install dependencies
         run: go mod tidy
 
@@ -35,34 +41,11 @@ jobs:
       - name: Build the binary
         run: go build -o futil ./cmd
 
-      - name: Get release title
-        id: get_release_title
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          title="${COMMIT_MESSAGE#release:}"
-          title=$(echo "$title" | sed 's/^[[:space:]]*//')
-          echo "::set-output name=release_title::$title"
-
-      - name: Create a GitHub Release
-        if: startsWith(github.event.head_commit.message, 'release:')
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.get_release_title.outputs.release_title }}
-          release_name: ${{ steps.get_release_title.outputs.release_title }}
-          draft: false
-          prerelease: false
-
       - name: Upload the built binary as a release asset
-        if: startsWith(github.event.head_commit.message, 'release:')
-        uses: actions/upload-release-asset@v1
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./futil
-          asset_name: futil
-          asset_content_type: application/octet-stream
