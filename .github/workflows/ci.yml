@@ -33,7 +33,7 @@ jobs:
         run: go test -v ./...
 
       - name: Build the binary
-        run: go build -o futil ./cmd
+        run: go build -o futil .
 
       - name: Get release title
         id: get_release_title
