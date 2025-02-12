@@ -1,13 +1,7 @@
 package cmd
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
-	"flag"
-	"io"
 	"os"
-	"strings"
 	"testing"
 )
 
