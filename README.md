@@ -53,7 +53,7 @@ The project is organized into several key parts:
 Use Go modules to build the project:
 ```bash
 go mod tidy
-go build -o futil ./cmd
+go build -o futil .
 ```
 
 ### Usage Examples
