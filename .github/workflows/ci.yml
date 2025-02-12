@@ -1,51 +1,37 @@
-name: CI/CD Pipeline
+name: ci
 
 on:
   pull_request:
-  push:
-    tags:
-      - "*"
+    branches:
+        - "*"
 
 jobs:
-  build_and_release:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v2
-
-      - name: Set up Go environment
-        uses: actions/setup-go@v2
+      # ref: https://github.com/tomerm-iguazio/mlrun/blob/9f5d3eb0ba66681387df656ed980332042ac3163/.github/workflows/ci.yaml#L54
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.23
+          go-version-file: "**/go.mod"
+          cache-dependency-path: "**/go.sum"
+          cache: true
 
-      - name: Cache Go modules to speed up builds
-        uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Lint the code
+      - name: Run Go Linter
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
 
-      - name: Install dependencies
-        run: go mod tidy
-
-      - name: Run unit tests
-        run: go test -v ./...
-
-      - name: Build the binary
-        run: go build -o futil ./cmd
-
-      - name: Upload the built binary as a release asset
-        uses: goreleaser/goreleaser-action@v6
+  tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v3
         with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          go-version-file: "**/go.mod"
+          cache-dependency-path: "**/go.sum"
+          cache: true
+
+      - name: Run Go Tests
+        run: go test -v ./...
