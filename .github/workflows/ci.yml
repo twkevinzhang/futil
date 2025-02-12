@@ -1,68 +1,36 @@
-name: CI/CD Pipeline
+name: ci
 
 on:
-  push:
-    branches:
-      - master
+  pull_request:
+  workflow_call:
 
 jobs:
-  build_and_release:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v2
-
-      - name: Set up Go environment
-        uses: actions/setup-go@v2
+      # ref: https://github.com/tomerm-iguazio/mlrun/blob/9f5d3eb0ba66681387df656ed980332042ac3163/.github/workflows/ci.yaml#L54
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.23
+          go-version-file: "go.mod"
+          cache-dependency-path: "go.sum"
+          cache: true
 
-      - name: Cache Go modules to speed up builds
-        uses: actions/cache@v2
+      - name: Run Go Linter
+        uses: golangci/golangci-lint-action@v3
         with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          version: latest
 
-      - name: Install dependencies
-        run: go mod tidy
+  tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
+          cache-dependency-path: "go.sum"
+          cache: true
 
-      - name: Run unit tests
+      - name: Run Go Tests
         run: go test -v ./...
-
-      - name: Build the binary
-        run: go build -o futil .
-
-      - name: Get release title
-        id: get_release_title
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          title="${COMMIT_MESSAGE#release:}"
-          title=$(echo "$title" | sed 's/^[[:space:]]*//')
-          echo "::set-output name=release_title::$title"
-
-      - name: Create a GitHub Release
-        if: startsWith(github.event.head_commit.message, 'release:')
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.get_release_title.outputs.release_title }}
-          release_name: ${{ steps.get_release_title.outputs.release_title }}
-          draft: false
-          prerelease: false
-
-      - name: Upload the built binary as a release asset
-        if: startsWith(github.event.head_commit.message, 'release:')
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./futil
-          asset_name: futil
-          asset_content_type: application/octet-stream
