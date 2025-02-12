@@ -63,7 +63,12 @@ func TestOpenInput(t *testing.T) {
 	defer os.Remove(tmpFile)
 
 	f, name, err = OpenInput(tmpFile)
-	defer f.Close()
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			t.Errorf("Failed to close file: %v", err)
+		}
+	}()
 	if err != nil {
 		t.Errorf("OpenInput(%s) returned error: %v", tmpFile, err)
 	}
