@@ -63,6 +63,12 @@ func TestOpenInput(t *testing.T) {
 	defer os.Remove(tmpFile)
 
 	f, name, err = OpenInput(tmpFile)
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			t.Errorf("Failed to close file: %v", err)
+		}
+	}()
 	if err != nil {
 		t.Errorf("OpenInput(%s) returned error: %v", tmpFile, err)
 	}
@@ -73,7 +79,6 @@ func TestOpenInput(t *testing.T) {
 	}
 	// 測試讀取檔案內容是否正確
 	data, err := io.ReadAll(f)
-	f.Close()
 	if err != nil {
 		t.Errorf("Failed to read from file: %v", err)
 	}

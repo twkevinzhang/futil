@@ -14,8 +14,8 @@ Leveraging AI tools to enhance work efficiency without compromising transparency
 
 The project is organized into several key parts:
 
-- **`cmd/main.go`**  
-  The main entry point for the application. It uses [github.com/urfave/cli/v2](https://github.com/urfave/cli/tree/v2) to implement a CLI with the following subcommands:
+- **`cmd/root.go`**  
+  The main entry point for the application. It uses [github.com/spf13/cobra] to implement a CLI with the following subcommands:
     - **`linecount`**: Reads file content (or standard input) and counts the number of lines. If the file is detected as binary, it returns an error.
     - **`checksum`**: Computes the checksum of a file using one of three supported algorithms (md5, sha1, sha256). The user must specify exactly one algorithm.
     - **`version`**: Displays the version information of the application.
@@ -23,20 +23,17 @@ The project is organized into several key parts:
 - **`internal/utils/utils.go`**  
   Contains common helper functions, such as opening files and detecting binary content.
 
-- **`main_test.go`**  
-  Contains unit tests for the `lineCountCmd` and `checksumCmd` functions, covering scenarios described in the project requirements.
-
 ### Design Considerations
 
 - **Modular Structure**: Common functions (like file opening and binary detection) are placed in the `utils` folder so that the main file focuses solely on CLI logic.
 - **Robust Error Handling**: The tool returns clear error messages when files do not exist, when a directory is passed instead of a file, or when a binary file is used for line counting.
-- **Flag Parsing**: The [urfave/cli/v2](https://github.com/urfave/cli/tree/v2) package is used for command-line argument parsing, which automatically generates help and version information.
+- **Flag Parsing**: The [github.com/spf13/cobra] package is used for command-line argument parsing.
 
 ---
 
 ## Third-Party Libraries
 
-- [**github.com/urfave/cli/v2**](https://github.com/urfave/cli/tree/v2)  
+- [github.com/spf13/cobra]  
   Provides a simple way to build command-line applications, including support for subcommands, flag parsing, and automatic help/version generation.
 
 ---
@@ -56,7 +53,7 @@ The project is organized into several key parts:
 Use Go modules to build the project:
 ```bash
 go mod tidy
-go build -o futil ./cmd
+go build -o futil .
 ```
 
 ### Usage Examples
@@ -112,30 +109,32 @@ $ ./futil help
 File Utility
 
 Usage:
-  futil [global options] command [command options] [arguments...]
+  futil [command]
+  futil [flags]
 
-Commands:
-   linecount    Print line count of file
-   checksum     Print checksum of file
-   version      Show the version info
-   help, h      Shows a list of commands or help for one command
+Available Commands:
+  checksum    Print checksum of file
+  help        Help about any command
+  linecount   Print line count of file
+  version     Show the version info
 
-Global Options:
-   --help, -h  show help
+Flags:
+  -h, --help   help for futil
    
 $ ./futil help linecount 
 Print line count of file
 
-USAGE:
-   futil linecount [flags]
+Usage:
+  futil linecount [flags]
 
-OPTIONS:
-   --file value, -f value  the input file
-   --help, -h              show help
+Flags:
+  -f, --file string   the input file
 ```
 
 ## Unit Testing
-Unit tests have been provided to ensure the correctness of the `lineCountCmd` and `checksumCmd` functions. To run the tests, execute:
+Unit tests have been provided to ensure the correctness of the `linecountCmd` and `checksumCmd` functions. To run the tests, execute:
 ```bash
-go test -v ./cmd
+go test -v ./...
 ```
+
+[github.com/spf13/cobra]: https://github.com/spf13/cobra
