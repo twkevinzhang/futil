@@ -40,9 +40,9 @@ func linecount(filename string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer f.Close()
 	reader := bufio.NewReader(f)
 	if filename != "-" && utils.IsBinary(reader) {
-		f.Close()
 		return 0, fmt.Errorf("cannot do linecount for binary file '%s'", name)
 	}
 
@@ -52,11 +52,10 @@ func linecount(filename string) (int, error) {
 		count++
 	}
 	if err := scanner.Err(); err != nil {
-		f.Close()
 		return 0, err
 	}
 	if filename != "-" {
-		f.Close()
+		return count, nil
 	}
 	return count, nil
 }
